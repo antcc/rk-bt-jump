@@ -1,0 +1,9 @@
+﻿python experiments.py \
+        --nreps 100 --nsamples 50 --dataset synthetic_brownian --nwalkers 64 \
+        --ntemps 5 --nburn 1500 --nsteps 500 --nleaves-max 5 --verbose 1 \
+        --seed 2026 --eta-scaling-factor 0.25 --save-results
+
+        idx_a = int(round(0.15 * (args.ngrid - 1)))
+        idx_b = int(round(0.40 * (args.ngrid - 1)))
+        idx_c = int(round(0.76 * (args.ngrid - 1)))
+        h1_coeffs = (0.2, -0.3, 0.5)
