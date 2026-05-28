@@ -18,11 +18,13 @@ from reference_methods import (
     global_l2_test,
     point_bonferroni_t_test,
 )
-from rkbt import (
+from rkbt_jump import (
     RKBTConfig,
+    fit_rkbt,
+)
+from utils import (
     SampleCovEstimator,
     brownian_kernel,
-    fit_rkbt,
     make_K_grid,
     make_mu_grid,
     ornstein_uhlenbeck_kernel,

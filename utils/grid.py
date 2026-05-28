@@ -1,4 +1,4 @@
-"""Utility functions."""
+"""Utility functions for grid computations."""
 
 from __future__ import annotations
 

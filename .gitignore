@@ -2,8 +2,11 @@
 __pycache__
 
 # Result and data
-results/
+results/*
 data/
+!results/mean\ sin
+!results/mean\ rkhs
+!results/real\ data
 
 # Test files
 test_*.py

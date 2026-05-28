@@ -1,4 +1,4 @@
-"""Kernel functions and covariance-grid helpers."""
+"""Kernel functions."""
 
 from __future__ import annotations
 
@@ -31,7 +31,7 @@ def brownian_kernel(
     *,
     variance: float = 1.0,
 ) -> np.ndarray:
-    """Brownian-motion kernel K(t, s)=variance*min(t,s)."""
+    """Brownian-motion kernel."""
     tt = _as_1d(t)
     ss = _as_1d(s)
     return variance * np.minimum.outer(tt, ss)

@@ -6,9 +6,9 @@ from dataclasses import dataclass
 from time import perf_counter
 
 import numpy as np
-from rkbt.covariance import SampleCovEstimator
 from scipy.stats import chi2, ttest_1samp
 from scipy.stats import f as f_dist
+from utils import SampleCovEstimator
 
 
 @dataclass
