@@ -1,0 +1,12 @@
+# Auxiliary files
+__pycache__
+
+# Result and data
+results/
+data/
+
+# Test files
+test_*.py
+
+# VsCode workspace
+*.code-workspace

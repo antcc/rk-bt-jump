@@ -1,0 +1,11 @@
+numpy>=2.3.5
+scipy>=1.17.0
+scikit-learn>=1.8.0
+Eryn==1.2.6
+
+# Optional
+# numba>=0.63.1       # accelerated likelihood engine
+# matplotlib>=3.10.8  # plotting
+# scikit-fda>=0.10.1  # smoothing in real-data experiments
+# arviz               # notebook diagnostics
+# meteostat           # real weather data download
