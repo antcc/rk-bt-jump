@@ -1,4 +1,4 @@
-"""Prior classes for the RKHS testing model."""
+"""Prior classes for the RKHS model."""
 
 from __future__ import annotations
 
@@ -72,7 +72,8 @@ def generate_valid_tau(
 
 
 class TauRJPrior:
-    """Joint prior object used by Eryn when `all_models_together` is enabled."""
+    """Joint prior object used by Eryn when
+    `all_models_together` is enabled."""
 
     def __init__(
         self,
@@ -87,7 +88,8 @@ class TauRJPrior:
         self.prior_tau = uniform(
             loc=self.ts.grid_min, scale=self.ts.grid_max - self.ts.grid_min
         )
-        # Eryn >=1.2 expects priors to expose this for backend bookkeeping.
+
+        # Bookkeeping for Eryn internals
         self.key_order = [self.ts.idx_tau]
 
         if self.lambda_p is not None and self.lambda_p <= 0:
@@ -96,7 +98,7 @@ class TauRJPrior:
     def _log_prior_p(self, p: np.ndarray) -> np.ndarray:
         if self.lambda_p is None:
             return np.zeros_like(p, dtype=float)
-        # Unnormalized Poisson prior on p (normalizing constant cancels in MCMC ratios).
+        # Unnormalized Poisson prior on p (normalizing constant cancels in MCMC acceptance ratios).
         return p * np.log(self.lambda_p) - gammaln(p + 1.0)
 
     def logpdf_components(

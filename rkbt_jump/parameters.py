@@ -12,7 +12,7 @@ class ThetaSpace:
     """Parameter indexing and tau-to-grid mapping utilities."""
 
     grid: np.ndarray
-    idx_tau: int = 0  # position of tau in the parameter vector
+    idx_tau: int = 0  # position of tau in the parameter vector (futureproofing)
 
     def __post_init__(self) -> None:
         grid = np.asarray(self.grid, dtype=float)

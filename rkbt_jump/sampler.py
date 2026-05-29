@@ -136,9 +136,8 @@ class RKBTModel:
         )
 
         self.branch_names = ["components"]
-        self.ndims = {
-            "components": 1
-        }  # since b is marginalized out, we only have one dimension (tau)
+        # Since b is marginalized out, we only have one dimension (tau)
+        self.ndims = {"components": 1}
         self.nleaves_min = {"components": self.config.nleaves_min}
         self.nleaves_max = {"components": self.config.nleaves_max}
 

@@ -10,7 +10,7 @@ class SampleCovEstimator:
     """Sample-covariance estimator for an unknown covariance kernel on a grid.
 
     When ``shrinkage=True`` (default), the Oracle Approximating Shrinkage
-    (OAS) estimator from :func:`sklearn.covariance.OAS` is used::
+    (OAS) estimator from `sklearn.covariance.OAS` is used::
 
         K_oas = (1 - rho) * K_sample + rho * (tr(K_sample) / G) * I_G
     """

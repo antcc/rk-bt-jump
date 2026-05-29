@@ -1,4 +1,12 @@
-"""Competitor one-sample functional tests (frequentist and Bayesian)."""
+"""
+Competitor one-sample functional tests (frequentist and Bayesian).
+
+References:
+
+[Zhang2013] Zhang, Jin-Ting (2013).
+Analysis of Variance for Functional Data.
+https://doi.org/10.1201/b15005,
+"""
 
 from __future__ import annotations
 
@@ -197,12 +205,7 @@ def global_f_test(
     nboot: int = 1000,
     rng: np.random.Generator | None = None,
 ) -> TestResult:
-    """F-type test for one-sample functional data [Zhang2013, 4.5.3].
-
-    Statistic: F_n = n * ||X_bar||^2 / tr(K_hat).
-    Null distribution approximated by F(f1, f2) with Satterthwaite d.f.:
-        f1 = tr(K_hat)^2 / tr(K_hat^2),  f2 = (n-1) * f1.
-    """
+    """[Zhang2013, 4.5.3]."""
     t0 = perf_counter()
     n, ngrid = X.shape
 

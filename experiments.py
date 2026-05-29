@@ -48,6 +48,7 @@ class Scenario:
     is_alternative: bool
     atoms_idx: tuple[int, ...] | None = None
     coeffs: tuple[float, ...] | None = None
+    periodic_scale: float | None = None
 
 
 def _nanmean_if_any(arr: np.ndarray) -> float:
@@ -109,7 +110,8 @@ def simulate_dataset(
             atoms_idx=scenario.atoms_idx,
             coeffs=scenario.coeffs,
         )
-        # mu = 0.3 * np.sin(2 * np.pi * grid)
+    elif scenario.periodic_scale:
+        mu = scenario.periodic_scale * np.sin(2 * np.pi * grid)
     else:
         mu = np.zeros(K_true.shape[0], dtype=float)
 
@@ -318,14 +320,23 @@ def summarize_rows(rows: list[dict]) -> list[dict]:
             if dataset.startswith("real"):
                 scenario_groups = sorted({str(r["scenario"]) for r in rr})
             else:
-                scenario_groups = ["all"]
+                scenario_groups = sorted(
+                    {
+                        str(r["scenario"])
+                        for r in rr
+                        if str(r["scenario"]) != "H0_true"
+                    }
+                )
 
             for scenario_name in scenario_groups:
-                rr_sc = (
-                    [r for r in rr if str(r["scenario"]) == scenario_name]
-                    if scenario_name != "all"
-                    else rr
-                )
+                if dataset.startswith("real"):
+                    rr_sc = [r for r in rr if str(r["scenario"]) == scenario_name]
+                else:
+                    rr_sc = [
+                        r
+                        for r in rr
+                        if str(r["scenario"]) in {"H0_true", scenario_name}
+                    ]
                 h0 = [r for r in rr_sc if r["is_alternative"] == 0]
                 h1 = [r for r in rr_sc if r["is_alternative"] == 1]
                 labels = np.asarray([r["is_alternative"] for r in rr_sc], dtype=int)
@@ -374,6 +385,19 @@ def summarize_rows(rows: list[dict]) -> list[dict]:
     return out
 
 
+def _scenario_sort_key(name: str) -> tuple[int, str]:
+    order = {
+        "H0_true": 0,
+        "H1_true_rkhs": 1,
+        "H1_true_periodic": 2,
+    }
+    return (order.get(name, 99), name)
+
+
+def _safe_slug(value: str) -> str:
+    return "".join(ch if (ch.isalnum() or ch in "-_") else "_" for ch in value)
+
+
 def write_csv(path: Path, rows: list[dict]) -> None:
     if not rows:
         return
@@ -389,20 +413,49 @@ def write_csv(path: Path, rows: list[dict]) -> None:
         writer.writerows(rows)
 
 
+def write_summary_csvs(output_dir: Path, dataset_name: str, rows: list[dict]) -> list[Path]:
+    if not rows:
+        return []
+
+    paths: list[Path] = []
+    rows_by_scenario: dict[str, list[dict]] = {}
+    for row in rows:
+        rows_by_scenario.setdefault(str(row.get("scenario", "")), []).append(row)
+
+    for scenario_name in sorted(rows_by_scenario, key=_scenario_sort_key):
+        scenario_rows = rows_by_scenario[scenario_name]
+        if not scenario_rows:
+            continue
+        path = output_dir / f"{dataset_name}_summary_{_safe_slug(scenario_name)}.csv"
+        write_csv(path, scenario_rows)
+        paths.append(path)
+    return paths
+
+
 def print_summary_table(summary_rows: list[dict]) -> None:
     print("\nSummary metrics (Type I / Power / AUC / Runtime):")
-    print("-" * 90)
-    print(
-        f"{'dataset':<20} {'method':<28} {'type_I':>8} {'power':>8} {'auc':>8} {'runtime_s':>12}"
-    )
-    print("-" * 90)
-    for r in summary_rows:
-        print(
-            f"{r['dataset']:<20} {r['method']:<28} "
-            f"{r['type1_error']:>8.3f} {r['power']:>8.3f} {r['auc']:>8.3f} "
-            f"{r['mean_runtime_sec']:>12.3f}"
+    rows_by_scenario: dict[str, list[dict]] = {}
+    for row in summary_rows:
+        rows_by_scenario.setdefault(str(row.get("scenario", "")), []).append(row)
+
+    for scenario_name in sorted(rows_by_scenario, key=_scenario_sort_key):
+        scenario_rows = sorted(
+            rows_by_scenario[scenario_name],
+            key=lambda r: (str(r.get("dataset", "")), str(r.get("method", ""))),
         )
-    print("-" * 90)
+        print(f"\nScenario: {scenario_name}")
+        print("-" * 90)
+        print(
+            f"{'dataset':<20} {'method':<28} {'type_I':>8} {'power':>8} {'auc':>8} {'runtime_s':>12}"
+        )
+        print("-" * 90)
+        for r in scenario_rows:
+            print(
+                f"{r['dataset']:<20} {r['method']:<28} "
+                f"{r['type1_error']:>8.3f} {r['power']:>8.3f} {r['auc']:>8.3f} "
+                f"{r['mean_runtime_sec']:>12.3f}"
+            )
+        print("-" * 90)
 
 
 def print_bayesian_details_table(detail_rows: list[dict]) -> None:
@@ -428,13 +481,13 @@ def print_bayesian_details_table(detail_rows: list[dict]) -> None:
     print("\nBayesian details (posterior diagnostics by replicate):")
     print("-" * 90)
     print(
-        f"{'dataset':<16} {'scenario':<16} {'rep':<7} {'method':<16} "
+        f"{'dataset':<16} {'true_mean':<20} {'rep':<7} {'method':<16} "
         f"{'post_H0':>10} {'log_bf10':>10}"
     )
     print("-" * 90)
     for r in bayes_rows:
         print(
-            f"{str(r.get('dataset', '')):<16} {str(r.get('scenario', '')):<16} "
+            f"{str(r.get('dataset', '')):<16} {str(r.get('scenario', '')):<20} "
             f"{int(r.get('replicate', 0) + 1):<7d} "
             f"{str(r.get('method', '')):<16} "
             f"{r.get('posterior_null_prob', np.nan):>10.3f} "
@@ -520,10 +573,17 @@ def run_experiments(args) -> tuple[list[dict], list[dict]]:
         idx_a = int(round(0.15 * (args.ngrid - 1)))
         idx_b = int(round(0.40 * (args.ngrid - 1)))
         idx_c = int(round(0.76 * (args.ngrid - 1)))
-        h1_coeffs = (0.2, -0.3, 0.5)
+        h1_rkhs_coeffs = (0.2, -0.3, 0.5)
+        h1_periodic_scale = 0.3
         scenarios = [
             Scenario("H0_true", False, None, None),
-            Scenario("H1_true", True, (idx_a, idx_b, idx_c), h1_coeffs),
+            Scenario(
+                "H1_true_rkhs",
+                True,
+                atoms_idx=(idx_a, idx_b, idx_c),
+                coeffs=h1_rkhs_coeffs,
+            ),
+            Scenario("H1_true_periodic", True, periodic_scale=h1_periodic_scale),
         ]
 
     rkbt_cfg = RKBTConfig(
@@ -689,7 +749,7 @@ def get_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "--dataset",
         type=str,
-        default="synthetic_sqexp",
+        default="synthetic_ou",
         choices=[
             "synthetic_sqexp",
             "synthetic_brownian",
@@ -760,13 +820,13 @@ def main() -> None:
             ch if (ch.isalnum() or ch in "-_") else "_" for ch in args.dataset
         )
         details_path = output_dir / f"{dataset_name}_details.csv"
-        summary_path = output_dir / f"{dataset_name}_summary.csv"
         write_csv(details_path, details)
-        write_csv(summary_path, summary)
+        summary_paths = write_summary_csvs(output_dir, dataset_name, summary)
 
         print("\nSaved:")
         print(f"  {details_path.as_posix()}")
-        print(f"  {summary_path.as_posix()}")
+        for path in summary_paths:
+            print(f"  {path.as_posix()}")
 
     print(f"Total elapsed time: {elapsed:.2f} seconds")
 

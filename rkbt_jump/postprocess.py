@@ -183,7 +183,7 @@ def simultaneous_credible_band(
     eps: float = 1e-10,
 ):
     """Compute simultaneous credible bands from posterior draws
-    based on quantiles of ``sup_t |mu(t)-mu_hat(t)|``.
+    based on quantiles of ``sup_t |mu(t)-mu_hat(t)|/sigma(t)``.
 
     Parameters
     ----------
@@ -194,6 +194,8 @@ def simultaneous_credible_band(
         Posterior mean function on the same grid.
     alpha
         Tail probability for the simultaneous band.
+    eps
+        Small tolerance for numerical stability.
     """
     mu_draws = np.asarray(mu_draws, dtype=float)
     posterior_mean_mu = np.asarray(posterior_mean_mu, dtype=float)
