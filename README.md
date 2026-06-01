@@ -1,6 +1,6 @@
 # rk-bt
 
-Bayesian one-sample functional test for the mean of a Gaussian process, using a reproducing kernel Hilbert space (RKHS) representation and reversible jump MCMC (RJMCMC) for posterior approximation. The mathematical model is described in [this article]().
+Bayesian one-sample functional test for the mean of a Gaussian process, using a reproducing kernel Hilbert space (RKHS) representation and reversible jump MCMC (RJMCMC) for posterior approximation. The mathematical model is described in [this article](#).
 
 ## Model overview
 
@@ -12,7 +12,7 @@ under the finite-dimensional RKHS parametrization
 
 $$\mu(\cdot)=\sum_{j=1}^{p}\beta_j K(t_j,\cdot).$$
 
-We assume that $\pi_0\in(0,1)$ is the prior probability of $H_0$, and we put a spike-and-slab prior on the coefficient vector $b = (\beta_1,\dots,\beta_p)\in \mathbb{R}^p$, a continuous prior on the time instants $\tau=(t_1,\dots,t_p)\in [0,1]^p$, and a discrete prior on the number of components $p\in\mathbb{N}$. The parameter $b$ is analytically marginalized out, yielding a closed-form marginal likelihood $m(X_{1:n}|p,\tau)$. Samples from the corresponding posterior are obtained through RJMCMC via the [Eryn](https://github.com/mikekatz04/Eryn) library, assuming an observation grid $\mathcal S=\{s_1,\dots,s_G\}\subset [0,1]$.
+We assume that $\pi_0\in(0,1)$ is the prior probability of $H_0$, and we put a spike-and-slab prior on the coefficient vector $b = (\beta_1,\dots,\beta_p)\in \mathbb{R}^p$, a continuous prior on the time instants $\tau=(t_1,\dots,t_p)\in [0,1]^p$, and a discrete prior on the number of components $p\in\mathbb{N}$. The parameter $b$ is analytically marginalized out, yielding a closed-form marginal likelihood $m(X_{1:n}|p,\tau)$. Samples from the corresponding posterior are obtained through RJMCMC via the [Eryn](https://github.com/mikekatz04/Eryn) library.
 
 ### Unknown covariance
 
