@@ -1,16 +1,16 @@
-# rk-bt
+# rk-bt-jump
 
-Bayesian one-sample functional test for the mean of a Gaussian process, using a reproducing kernel Hilbert space (RKHS) representation and reversible jump MCMC (RJMCMC) for posterior approximation. The mathematical model is described in [this article](#).
+Bayesian one-sample functional test for the mean of a Gaussian process, using a reproducing kernel Hilbert space (RKHS) representation and reversible jump MCMC (RJMCMC) for posterior approximation.
 
 ## Model overview
 
-Given an i.i.d. sample $X_1,\dots,X_n \sim \mathrm{GP}(\mu, K)$ with $\mu\in\mathcal H(K)$, we test
+Given an i.i.d. sample $X_1,\dots,X_n \sim \mathrm{GP}(\mu, K)$ with $\mu\in\mathcal H(K)$, where $\mathcal H(K)$ is the RKHS associated with the covariance function $K$, we test
 
 $$H_0\colon \mu \equiv 0 \qquad\text{vs.}\qquad H_1\colon \mu \not\equiv 0,$$
 
 under the finite-dimensional RKHS parametrization
 
-$$\mu(\cdot)=\sum_{j=1}^{p}\beta_j K(t_j,\cdot).$$
+$$\mu_\theta(\cdot)=\sum_{j=1}^{p}\beta_j K(t_j,\cdot), \quad \theta=(p,\tau, b).$$
 
 We assume that $\pi_0\in(0,1)$ is the prior probability of $H_0$, and we put a spike-and-slab prior on the coefficient vector $b = (\beta_1,\dots,\beta_p)\in \mathbb{R}^p$, a continuous prior on the time instants $\tau=(t_1,\dots,t_p)\in [0,1]^p$, and a discrete prior on the number of components $p\in\mathbb{N}$. The parameter $b$ is analytically marginalized out, yielding a closed-form marginal likelihood $m(X_{1:n}|p,\tau)$. Samples from the corresponding posterior are obtained through RJMCMC via the [Eryn](https://github.com/mikekatz04/Eryn) library.
 
@@ -24,7 +24,6 @@ When $K$ is unknown, a plug-in approach is used: estimate $\hat K$ from the data
 
 ```
 rkbt_jump/
-  __init__.py           – public API re-exports
   likelihood.py         – log m(X|p,tau) with NumPy/Numba engines
   moves.py              – birth/death RJMCMC moves
   parameters.py         – grid helpers and tau-to-grid indexing
@@ -120,7 +119,7 @@ python experiments.py \
   --nleaves-min 1 \
   --nleaves-max 5 \
   --save-results \
-  --output-dir results/run1
+  --output-dir results/
 ```
 
 Available datasets: `synthetic_sqexp`, `synthetic_brownian`, `synthetic_ou`,
