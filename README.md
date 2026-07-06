@@ -78,7 +78,7 @@ result = fit_rkbt(X, K_hat, grid, config=cfg, progress=True)
 
 # Summaries 
 print("P(H0|X) :", result.summary.posterior_null_prob)
-print("log B_10 :", result.summary.log_bf10)
+print("log BF_10 :", result.summary.log_bf10)
 ```
 
 ## Likelihood engine
